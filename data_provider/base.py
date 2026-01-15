@@ -100,7 +100,7 @@ class BaseFetcher(ABC):
         stock_code: str, 
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
-        days: int = 30
+        days: int = 60
     ) -> pd.DataFrame:
         """
         获取日线数据（统一入口）
@@ -125,7 +125,7 @@ class BaseFetcher(ABC):
             end_date = datetime.now().strftime('%Y-%m-%d')
         
         if start_date is None:
-            # 默认获取最近 30 个交易日（按日历日估算，多取一些）
+            # 默认获取最近 60 个交易日（按日历日估算，多取一些）
             from datetime import timedelta
             start_dt = datetime.strptime(end_date, '%Y-%m-%d') - timedelta(days=days * 2)
             start_date = start_dt.strftime('%Y-%m-%d')
@@ -294,7 +294,7 @@ class DataFetcherManager:
         stock_code: str,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
-        days: int = 30
+        days: int = 60
     ) -> Tuple[pd.DataFrame, str]:
         """
         获取日线数据（自动切换数据源）
