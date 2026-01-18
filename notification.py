@@ -17,11 +17,15 @@ A股自选股智能分析系统 - 通知层
 import logging
 import smtplib
 import re
+import os
 from datetime import datetime
 from typing import List, Dict, Any, Optional
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
 from email.header import Header
+from email.utils import formataddr, formatdate
+from pathlib import Path
 from enum import Enum
 
 import requests
@@ -680,7 +684,56 @@ class NotificationService:
         ])
         
         return "\n".join(report_lines)
-    
+
+    def generate_wechat_simple_dashboard(self, results: List[AnalysisResult]) -> str:
+        """
+        生成企业微信决策仪表盘精简版（控制在4000字符内）
+
+        只保留得分和option建议
+
+        Args:
+            results: 分析结果列表
+
+        Returns:
+            精简版决策仪表盘
+        """
+        report_date = datetime.now().strftime('%Y-%m-%d')
+
+        # 按评分排序
+        sorted_results = sorted(results, key=lambda x: x.sentiment_score, reverse=True)
+
+        # 统计
+        buy_count = sum(1 for r in results if r.operation_advice in ['买入', '加仓', '强烈买入'])
+        sell_count = sum(1 for r in results if r.operation_advice in ['卖出', '减仓', '强烈卖出'])
+        hold_count = sum(1 for r in results if r.operation_advice in ['持有', '观望'])
+
+        lines = [
+            f"## 🎯 {report_date} 决策仪表盘",
+            "",
+            f"> {len(results)}只股票 | 🟢买入:{buy_count} 🟡观望:{hold_count} 🔴卖出:{sell_count}",
+            "",
+        ]
+
+        for result in sorted_results:
+            signal_text, signal_emoji, _ = self._get_signal_level(result)
+            # 股票名称
+            stock_name = result.name if result.name and not result.name.startswith('股票') else f'股票{result.code}'
+
+            # 标题行：信号等级 + 股票名称
+            lines.append(f"### {signal_emoji} **{signal_text}** | {stock_name}({result.code})")
+            lines.append("\n")
+
+        # 底部
+        lines.append(f"*生成时间: {datetime.now().strftime('%H:%M')}*")
+        content = "\n".join(lines)
+
+        # 检查长度
+        if len(content) > 3800:
+            logger.warning(f"仪表盘超长({len(content)}字符)，截断")
+            content = content[:3800] + "\n...(已截断)"
+
+        return content
+
     def generate_wechat_dashboard(self, results: List[AnalysisResult]) -> str:
         """
         生成企业微信决策仪表盘精简版（控制在4000字符内）
@@ -1350,7 +1403,7 @@ class NotificationService:
             logger.error(f"响应内容: {response.text}")
             return False
     
-    def send_to_email(self, content: str, subject: Optional[str] = None) -> bool:
+    def send_to_email(self, content: str, subject: Optional[str] = None, attach_file:str = None) -> bool:
         """
         通过 SMTP 发送邮件（自动识别 SMTP 服务器）
         
@@ -1389,6 +1442,23 @@ class NotificationService:
             html_part = MIMEText(html_content, 'html', 'utf-8')
             msg.attach(text_part)
             msg.attach(html_part)
+
+            if attach_file and os.path.exists(attach_file):
+                with open(attach_file, "rb") as file:
+                    file_name = Path(attach_file).name
+                    part = MIMEApplication(file.read(), Name=file_name)
+
+                    # 设置附件头部
+                    part.add_header('Content-Disposition', 'attachment',
+                                    filename=('utf-8', '', file_name))
+                    part.add_header('Content-ID', '<{}>'.format(file_name))
+
+                    # 编码文件名
+                    part.set_param('name', file_name, header='Content-Disposition')
+                    part.set_param('filename', file_name, header='Content-Disposition')
+
+                    msg.attach(part)
+                    print(f"已添加附件: {attach_file}")
             
             # 自动识别 SMTP 配置
             domain = sender.split('@')[-1].lower()
@@ -1779,7 +1849,7 @@ class NotificationService:
                 elif channel == NotificationChannel.TELEGRAM:
                     result = self.send_to_telegram(content)
                 elif channel == NotificationChannel.EMAIL:
-                    result = self.send_to_email(content)
+                    result = self.send_to_email(content, attach_file)
                 elif channel == NotificationChannel.CUSTOM:
                     result = self.send_to_custom(content)
                 else:

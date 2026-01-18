@@ -577,12 +577,11 @@ class StockAnalysisPipeline:
             
             # 推送通知
             if self.notifier.is_available():
-                # 生成精简版决策仪表盘用于推送
-                dashboard_content = self.notifier.generate_wechat_dashboard(results)
+                dashboard_content = self.notifier.generate_wechat_simple_dashboard(results)
                 logger.info(f"决策仪表盘长度: {len(dashboard_content)} 字符")
                 logger.debug(f"推送内容:\n{dashboard_content}")
                 
-                success = self.notifier.send(dashboard_content)
+                success = self.notifier.send(dashboard_content, filepath)
                 if success:
                     logger.info("决策仪表盘推送成功")
                 else:

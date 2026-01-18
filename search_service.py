@@ -514,12 +514,14 @@ class SearchService:
         """
         results = {}
         search_count = 0
-        
+        now = datetime.now()
+        year = now.year
+        month = now.month
         # 定义搜索维度
         search_dimensions = [
             {
                 'name': 'latest_news',
-                'query': f"{stock_name} {stock_code} 最新 新闻 2026年1月",
+                'query': f"{stock_name} {stock_code} 最新 新闻 {year}年{month}月",
                 'desc': '最新消息'
             },
             {
@@ -529,7 +531,7 @@ class SearchService:
             },
             {
                 'name': 'earnings',
-                'query': f"{stock_name} 年报预告 业绩预告 业绩快报 2025年报",
+                'query': f"{stock_name} 年报预告 业绩预告 业绩快报 {year - 1}年报",
                 'desc': '业绩预期'
             },
         ]
