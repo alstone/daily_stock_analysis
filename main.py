@@ -581,7 +581,7 @@ class StockAnalysisPipeline:
                 logger.info(f"决策仪表盘长度: {len(dashboard_content)} 字符")
                 logger.debug(f"推送内容:\n{dashboard_content}")
                 
-                success = self.notifier.send(dashboard_content, subject=None, filepath=filepath)
+                success = self.notifier.send(dashboard_content, attach_file=filepath)
                 if success:
                     logger.info("决策仪表盘推送成功")
                 else:
