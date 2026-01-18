@@ -1817,7 +1817,7 @@ class NotificationService:
             "body": content
         }
 
-    def send(self, content: str) -> bool:
+    def send(self, content: str, attach_file) -> bool:
         """
         统一发送接口 - 向所有已配置的渠道发送
         
@@ -1849,7 +1849,7 @@ class NotificationService:
                 elif channel == NotificationChannel.TELEGRAM:
                     result = self.send_to_telegram(content)
                 elif channel == NotificationChannel.EMAIL:
-                    result = self.send_to_email(content)
+                    result = self.send_to_email(content, attach_file)
                 elif channel == NotificationChannel.CUSTOM:
                     result = self.send_to_custom(content)
                 else:
