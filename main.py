@@ -691,7 +691,7 @@ def run_market_review(notifier: NotificationService, analyzer=None, search_servi
                 # 添加标题
                 report_content = f"🎯 大盘复盘\n\n{review_report}"
                 
-                success = notifier.send(report_content)
+                success = notifier.send(report_content, attach_file=None)
                 if success:
                     logger.info("大盘复盘推送成功")
                 else:
@@ -782,7 +782,7 @@ def run_full_analysis(
                 if doc_url:
                     logger.info(f"飞书云文档创建成功: {doc_url}")
                     # 可选：将文档链接也推送到群里
-                    pipeline.notifier.send(f"[{now.strftime('%Y-%m-%d %H:%M')}] 复盘文档创建成功: {doc_url}")
+                    pipeline.notifier.send(f"[{now.strftime('%Y-%m-%d %H:%M')}] 复盘文档创建成功: {doc_url}", attach_file=None)
 
         except Exception as e:
             logger.error(f"飞书文档生成失败: {e}")
