@@ -721,7 +721,6 @@ class NotificationService:
 
             # 标题行：信号等级 + 股票名称
             lines.append(f"### {signal_emoji} **{signal_text}** | {stock_name}({result.code})")
-            lines.append("\n")
 
         # 底部
         lines.append(f"*生成时间: {datetime.now().strftime('%H:%M')}*")
@@ -1849,7 +1848,7 @@ class NotificationService:
                 elif channel == NotificationChannel.TELEGRAM:
                     result = self.send_to_telegram(content)
                 elif channel == NotificationChannel.EMAIL:
-                    result = self.send_to_email(content, attach_file)
+                    result = self.send_to_email(content, None, attach_file)
                 elif channel == NotificationChannel.CUSTOM:
                     result = self.send_to_custom(content)
                 else:
