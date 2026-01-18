@@ -1817,7 +1817,7 @@ class NotificationService:
             "body": content
         }
 
-    def send(self, content: str) -> bool:
+    def send(self, content: str, attach_file: str) -> bool:
         """
         统一发送接口 - 向所有已配置的渠道发送
         
@@ -1825,7 +1825,7 @@ class NotificationService:
         
         Args:
             content: 消息内容（Markdown 格式）
-            
+            attach_file: 附件
         Returns:
             是否至少有一个渠道发送成功
         """
@@ -1849,7 +1849,7 @@ class NotificationService:
                 elif channel == NotificationChannel.TELEGRAM:
                     result = self.send_to_telegram(content)
                 elif channel == NotificationChannel.EMAIL:
-                    result = self.send_to_email(content)
+                    result = self.send_to_email(content, attach_file)
                 elif channel == NotificationChannel.CUSTOM:
                     result = self.send_to_custom(content)
                 else:
@@ -1929,7 +1929,7 @@ class NotificationService:
         from pathlib import Path
 
         if filename is None:
-            date_str = datetime.now().strftime('%Y%m%d')
+            date_str = datetime.now().strftime('%Y%m%d%H%M%S')
             filename = f"report_{date_str}.md"
 
         # 确保 reports 目录存在
