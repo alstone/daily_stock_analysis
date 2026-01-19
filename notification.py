@@ -718,9 +718,8 @@ class NotificationService:
             signal_text, signal_emoji, _ = self._get_signal_level(result)
             # 股票名称
             stock_name = result.name if result.name and not result.name.startswith('股票') else f'股票{result.code}'
-
             # 标题行：信号等级 + 股票名称
-            lines.append(f"### {signal_emoji} **{signal_text}** | {stock_name}({result.code})")
+            lines.append(f"### {signal_emoji} **{signal_text}** | {stock_name}({result.code}) | 评分：{result.sentiment_score} | 趋势:{result.trend_prediction}| 操作:{result.operation_advice}")
 
         # 底部
         lines.append(f"*生成时间: {datetime.now().strftime('%H:%M')}*")
